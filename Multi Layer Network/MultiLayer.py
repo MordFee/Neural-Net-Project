@@ -94,8 +94,11 @@ class MultiLayer:
         return
 
 if __name__ == "__main__":
+    set_x = quick_load()
+    images, labels = set_x[0][:1], set_x[1][:1]
 
+    print images, labels
     myInput = []
-    myNeurons = [10,6,10]
-    myNetwork = MultiLayer(myNeurons, sigmoid)
+    #myNeurons = [164,80,10]
+    #myNetwork = MultiLayer(myNeurons, sigmoid)
 
