@@ -1,4 +1,5 @@
 from utils import *
+from graph_utils import *
 import numpy as np
 import pandas as pd
 from keras.models import Sequential
@@ -6,19 +7,31 @@ from keras.layers.core import Dense, Dropout, Activation
 from keras.optimizers import SGD
 from keras.utils import np_utils
 from os.path import isfile
+import networkx as nx
+import warnings
 
 class Patal:
 
-    def __init__(self,layer_sizes, fileName='mnist_14x14', activation_function='sigmoid'):
+    def __init__(self,layer_sizes, layernames = None,fileName='mnist_14x14', activation_function='sigmoid',graph = None):
         self.layer_sizes = layer_sizes
         self.fileName = fileName
+        ##Assign layer names
+        if layernames is not None:
+            if len(layernames) != len(layer_sizes):
+                print('Warning: there aren\'t as many layernames as layers, reassigning names')
+                self.layernames = ['input'] + ['L'+str(x) for x in range(1,len(layer_sizes)-1) x] + ['output']
+            else:
+                self.layernames = layernames
+        else:
+            self.layernames = ['input'] + ['L'+str(x) for x in range(1,len(layer_sizes)-1) x] + ['output']
         self.activation_function = activation_function
+        self.graph = graph
 
     def run(self):
         self.get_and_reshape_datasets()
         self.create_network()
         self.fit_network()
-        self.save_resutls()
+        self.save_results()
 
     def get_and_reshape_datasets(self):
         # Get the datasets
@@ -61,7 +74,42 @@ class Patal:
         self.finalScore = float(sum(self.y_pred==y_test))/len(y_test)
         print self.finalScore
 
-    def save_resutls(self):
+
+    def generate_graph(self, threshold = 0):
+        '''
+        This function generates a NetworkX graph based on the model setup
+        '''
+        self.graph = keras_to_graph(self.model,self.layernames,threshold)
+
+
+    def plot_graph(self,weighted=False,scaling = lambda x:x):
+        '''
+        This function plots the current state of the feed forward neural net
+        '''
+        if self.graph == nx.classes.digraph.DiGraph:
+            plot_forward_neural_net(graph,layerNames,weighted=weighted, scaling= scaling)
+        else:
+            warnings.warn("Graph has not been generated correctly; cannot plot!", RuntimeWarning)
+
+    def graph_metric(self, metric=nx.algorithms.connectivity.node_connectivity,layers=True):
+        '''
+        This function generates a dataframe of metric pertaining to each layer's connections, and the overall network as a whole
+        Returns dataframe
+        '''
+        cols = ["Metric Name "] + ['fullModel']
+        metrics = [metric.__name__, metric(graph)]
+        if layers:
+            cols = cols + ['%s to %s' % t for t in zip(layerNames[:-1], layerNames[1:])]
+            metrics = + [metric(graph.subgraph(layer)) for layer in separate_layers(graph)]
+        return pd.DataFrame(metrics,columns=cols)
+    
+
+    ##TODO: Load and save models
+    def save_model(filePath):
+
+    def load_model(filePath):
+
+    def save_results(self):
         # Get the name of the file
         outputPath = '../results/' + self.fileName
         for l in layer_sizes:
