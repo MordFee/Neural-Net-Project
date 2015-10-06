@@ -6,25 +6,26 @@ from keras.models import Sequential
 from keras.layers.core import Dense, Dropout, Activation
 from keras.optimizers import SGD
 from keras.utils import np_utils
-from os.path import isfile
 import networkx as nx
 import warnings
+from time import gmtime, strftime
+from sklearn import metrics
 
 class Patal:
 
-    def __init__(self,layer_sizes, layernames = None,fileName='mnist_14x14', activation_function='sigmoid',graph = None):
-        self.layer_sizes = layer_sizes
-        self.fileName = fileName
+    def __init__(self, layerSizes, layerNames=None, dataFileName='mnist_14x14', activationFunction='sigmoid', graph=None):
+        self.layerSizes = layerSizes
+        self.dataFileName = dataFileName
         ##Assign layer names
-        if layernames is not None:
-            if len(layernames) != len(layer_sizes):
-                print('Warning: there aren\'t as many layernames as layers, reassigning names')
-                self.layernames = ['input'] + ['L'+str(x) for x in range(1,len(layer_sizes)-1) x] + ['output']
+        if layerNames is not None:
+            if len(layerNames) != len(layerSizes):
+                print('Warning: there aren\'t as many layerNames as layers, reassigning names')
+                self.layerNames = ['input'] + ['L'+str(x) for x in range(1,len(layerSizes)-1)] + ['output']
             else:
-                self.layernames = layernames
+                self.layerNames = layerNames
         else:
-            self.layernames = ['input'] + ['L'+str(x) for x in range(1,len(layer_sizes)-1) x] + ['output']
-        self.activation_function = activation_function
+            self.layerNames = ['input'] + ['L'+str(x) for x in range(1,len(layerSizes)-1)] + ['output']
+        self.activationFunction = activationFunction
         self.graph = graph
 
     def run(self):
@@ -35,96 +36,86 @@ class Patal:
 
     def get_and_reshape_datasets(self):
         # Get the datasets
-        dataPath = '../data/' + fileName + '.pkl.gz'
+        dataPath = '../data/' + dataFileName + '.pkl.gz'
 
         self.datasets = load_data(dataPath)
-        X_train, y_train = self.datasets[0]
-        X_test, y_test = self.datasets[2]
+        XTrain, yTrain = self.datasets[0]
+        XTest, yTest = self.datasets[1]
 
         # Reshape datasets
-        self.y_train = np_utils.to_categorical(y_train)
-        self.y_test = y_test
-        input_num = X_train.shape[1]
-        output_num = self.y_train.shape[1]
-        if input_num != self.layer_sizes[0]:
+        self.yTrain = np_utils.to_categorical(yTrain)
+        self.yTest = yTest
+        input_num = XTrain.shape[1]
+        output_num = self.yTrain.shape[1]
+        if input_num != self.layerSizes[0]:
             raise Exception("ERROR, the first layer does not have the right amount of neurons.")
-        if output_num != self.layer_sizes[-1]:
+        if output_num != self.layerSizes[-1]:
             raise Exception("ERROR, the last layer does not have the right amount of neurons.")
-        self.X_train = X_train.reshape([len(X_train), self.layer_sizes[0]])
-        self.X_test = X_test.reshape([len(X_test), self.layer_sizes[0]])
+        self.XTrain = XTrain.reshape([len(XTrain), self.layerSizes[0]])
+        self.XTest = XTest.reshape([len(XTest), self.layerSizes[0]])
 
-    def create_network(self):
+    def create_network(self, dropout=0, loss='mse', lr=0.01, decay=1e-6, momentum=0.9, nesterov=True):
         # Create the network
         model = Sequential()
-        for l in range(1, len(self.layer_sizes)):
-            model.add(Dense(self.layer_sizes[l-1], self.layer_sizes[l]))
-            model.add(Activation(activation_function))
-            model.add(Dropout(0.01))
-        sgd = SGD(lr=0.1, decay=1e-6, momentum=0.9, nesterov=True)
-        model.compile(loss='mse', optimizer=sgd)
+        for l in range(1, len(self.layerSizes)):
+            model.add(Dense(self.layerSizes[l-1], self.layerSizes[l]))
+            model.add(Activation(activationFunction))
+            model.add(Dropout(dropout))
+        sgd = SGD(lr=lr, decay=decay, momentum=momentum, nesterov=nesterov)
+        model.compile(loss=loss, optimizer=sgd)
         self.model = model
 
-    def fit_network(self):
+    def fit_network(self, nb_epoch=20, batch_size=16, validation_split=0, show_accuracy=True, verbose=2):
         # Run the network
-        self.output = self.model.fit(self.X_train, self.y_train, nb_epoch=10, batch_size=16, validation_split=0.1, show_accuracy=True, verbose=2)
+        self.output = self.model.fit(self.XTrain, self.yTrain, nb_epoch=nb_epoch, batch_size=batch_size, validation_split=validation_split, show_accuracy=show_accuracy, verbose=verbose)
 
         # Get the predictions
-        self.y_pred = self.model.predict_classes(self.X_test, verbose=0).astype(int)
-        y_test = np.squeeze(self.y_test).astype(int)
-        self.finalScore = float(sum(self.y_pred==y_test))/len(y_test)
-        print self.finalScore
+        self.yPred = self.model.predict_classes(self.XTest, verbose=0).astype(int)
+        yTest = np.squeeze(self.yTest).astype(int)
+        self.finalScore = float(sum(self.yPred==yTest)) / len(yTest)
+        print(self.finalScore)
+        print(metrics.confusion_matrix(yTest, self.yPred))
 
+    def generate_graph(self, threshold=0):
+        # This function generates a NetworkX graph based on the model setup
+        self.graph = keras_to_graph(self.model, self.layerNames, threshold)
 
-    def generate_graph(self, threshold = 0):
-        '''
-        This function generates a NetworkX graph based on the model setup
-        '''
-        self.graph = keras_to_graph(self.model,self.layernames,threshold)
-
-
-    def plot_graph(self,weighted=False,scaling = lambda x:x):
-        '''
-        This function plots the current state of the feed forward neural net
-        '''
+    def plot_graph(self, weighted=False, scaling=lambda x:x):
+        # This function plots the current state of the feed forward neural net
         if self.graph == nx.classes.digraph.DiGraph:
-            plot_forward_neural_net(graph,layerNames,weighted=weighted, scaling= scaling)
+            plot_forward_neural_net(self.graph ,self.layerNames, weighted=weighted, scaling=scaling)
         else:
             warnings.warn("Graph has not been generated correctly; cannot plot!", RuntimeWarning)
 
-    def graph_metric(self, metric=nx.algorithms.connectivity.node_connectivity,layers=True):
+    def graph_metric(self, metric=nx.algorithms.node_connectivity, layers=True):
         '''
         This function generates a dataframe of metric pertaining to each layer's connections, and the overall network as a whole
         Returns dataframe
         '''
         cols = ["Metric Name "] + ['fullModel']
-        metrics = [metric.__name__, metric(graph)]
+        metrics = [metric.__name__, metric(self.graph)]
         if layers:
-            cols = cols + ['%s to %s' % t for t in zip(layerNames[:-1], layerNames[1:])]
-            metrics = + [metric(graph.subgraph(layer)) for layer in separate_layers(graph)]
-        return pd.DataFrame(metrics,columns=cols)
-    
+            cols = cols + ['%s to %s' % t for t in zip(self.layerNames[:-1], self.layerNames[1:])]
+            metrics = [metric(self.graph.subgraph(layer)) for layer in separate_layers(self.graph)]
+        return pd.DataFrame(metrics, columns=cols)
 
-    ##TODO: Load and save models
-    def save_model(filePath):
+    def save_model(self, filePath):
+        self.model.save_weights(filePath)
 
-    def load_model(filePath):
+    def load_model(self, filePath):
+        self.model.load_weights(filePath)
 
-    def save_results(self):
+    def get_file_name(self):
         # Get the name of the file
-        outputPath = '../results/' + self.fileName
-        for l in layer_sizes:
+        outputPath = '../results/' + self.dataFileName + str(strftime("%Y%m%d_%Hh%Mm%Ss", gmtime()))
+        for l in layerSizes:
             outputPath += '_' + str(l)
         outputPath += '_fc' #Fully connected
         outputPath += '.csv'
 
-        # test if there is not already a file with the same name
-        c = 0
-        while isfile(outputPath) and c < 5:
-            c += 1
-            outputPath = outputPath[:-4] + '_bis.csv'
-            print 'ATTENTION: the file name already exists'
-
+    def save_results(self):
         # Save the output in a csv
+        outputPath = self.get_file_name()
         df = pd.DataFrame(self.output.history)
         df.to_csv(outputPath)
 
@@ -132,12 +123,12 @@ class Patal:
 if __name__=='__main__':
     # Variable
     # 'mnist_14x14'
-    fileName =  'mnist'
-    layer_sizes = [28*28, 128, 64, 32, 10]
-    activation_function = 'sigmoid'
+    dataFileName =  'mnist'
+    layerSizes = [28*28, 300, 150, 10]
+    activationFunction = 'sigmoid'
 
     # Create and run the Patal
-    patal = Patal(layer_sizes, fileName=fileName, activation_function=activation_function)
+    patal = Patal(layerSizes, dataFileName=dataFileName, activationFunction=activationFunction)
     patal.run()
 
 
