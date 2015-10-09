@@ -44,7 +44,7 @@ def plot_forward_neural_net(graph,layerNames,weighted=False, scaling= lambda x:x
     
     ##TODO: Make it return the Matplotlib object or figure isntead of automatically drawing
     
-    listOfLayers = separateLayers(graph.nodes(),layerNames)
+    listOfLayers = separate_layers(graph.nodes(),layerNames)
     positions = dict()
     for ix,layer in enumerate(listOfLayers):
         positions.update((n, (ix, i*(1-2*(i%2)))) for i, n in enumerate(layer))
