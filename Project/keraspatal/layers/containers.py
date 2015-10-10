@@ -54,7 +54,7 @@ class Sequential(Layer):
                 raise Exception("Layer mask %s not compatible with layer shape %s." % (layer_mask.shape,layer.params.eval().shape))
             self.layer_masks += [floatX(layer_mask),None] #because the tensor list goes W,b
         else:
-            layer_masks += [None,None]
+            self.layer_masks += [None,None]
 
     def get_output(self, train=False):
         return self.layers[-1].get_output(train)
