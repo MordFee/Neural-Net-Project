@@ -58,7 +58,7 @@ class SGD(Optimizer):
                 new_p = p + v
 
             if layer_mask !=None: #PAT Added to implement arbitrary connection scheme, not most efficient
-                new_p = p * layer_mask
+                new_p = new_p * layer_mask
 
             updates.append((p, c(new_p))) # apply constraints
         return updates
@@ -88,7 +88,7 @@ class RMSprop(Optimizer):
             new_p = p - self.lr * g / T.sqrt(new_a + self.epsilon)
 
             if layer_mask !=None: #PAT Added to implement arbitrary connection scheme, not most efficient
-                new_p = p * layer_mask
+                new_p = new_p * layer_mask
 
             updates.append((p, c(new_p))) # apply constraints
         return updates
@@ -116,7 +116,7 @@ class Adagrad(Optimizer):
             new_p = p - self.lr * g / T.sqrt(new_a + self.epsilon)
 
             if mask !=None: #PAT Added to implement arbitrary connection scheme, not most efficient
-                new_p = p * mask
+                new_p = new_p * mask
 
             updates.append((p, c(new_p))) # apply constraints
         return updates
@@ -155,7 +155,7 @@ class Adadelta(Optimizer):
             new_d_a = self.rho * d_a + (1 - self.rho) * update ** 2
 
             if layer_mask !=None: #PAT Added to implement arbitrary connection scheme, not most efficient
-                new_p = p * layer_mask
+                new_p = new_p * layer_mask
 
             updates.append((d_a, new_d_a))
         return updates
@@ -203,7 +203,7 @@ class Adam(Optimizer):
             p_t = p - self.lr * m_b_t / (T.sqrt(v_b_t) + self.epsilon)
 
             if mask !=None: #PAT Added to implement arbitrary connection scheme, not most efficient
-                new_p = p * layer_mask
+                new_p = new_p * layer_mask
 
             updates.append((m, m_t))
             updates.append((v, v_t))
