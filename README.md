@@ -3,20 +3,20 @@ Alfred and Pat's Project for IEOR8100
 Test alfred
 
 
-File structure is :
-Neural-Net-Project:
-  -Data: Datasets to load
-  -Project: 
-    -Source Code
-  -Results:
-    -Experiment_n: 
-      -Final Log: a file to keep track of the aggregate results
-      -Readme: the setup for this experiment
-      -Trial_1: 
-        -Inputs: The JSON to configure the file
-        -Outputs: The log file of the accuracy at each epoch etc. 
-        -Weights: The saved neural net weights
-        -Graph: The graph corresponding to internal connections
-  -Experiments:
-    -Expeiment_n:
-      -Inputs: JSONs to configure each Trial
+##File structure
+- __Neural-Net-Project__
+  - __Data:__ Datasets to load
+  - __Project__: 
+    - __Source Code__
+  - __Results__:
+    - __Experiment_n__: 
+      - __Final Log__: a file to keep track of the aggregate results
+      - __Readme__: the setup for this experiment
+      - __Trial_1__: 
+        - __Inputs__: The JSON to configure the file
+        - __Outputs__: The log file of the accuracy at each epoch etc. 
+        - __Weights__: The saved neural net weights
+        - __Graph__: The graph corresponding to internal connections
+  - __Experiments__:
+    - __Expeiment_n__:
+      - __Inputs__: JSONs to configure each Trial
