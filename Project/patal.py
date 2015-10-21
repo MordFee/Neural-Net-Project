@@ -47,7 +47,6 @@ class Patal:
     def generate_layer_masks(self,graphGeneratorAlias,graphGeneratorParams,seed=333):
         random.seed(seed)
         layerMasks = graph_creation.get(graphGeneratorAlias,graphGeneratorParams)
-        print(layerMasks)
         return(layerMasks)
 
     def create_network(self, 
@@ -114,7 +113,7 @@ class Patal:
         # from keraspatal.callbacks import ModelCheckpoint 
         # checkpoint = ModelCheckpoint(filepath="tmp/weights.hdf5", verbose=1)
         # callbacks=[checkpoint]
-		myfile = open(output_filepath, 'w')
+        myfile = open(output_filepath, 'w')
         myfile.write('Timing (s), Loss, Accuracy\n')
         myfile.close()
         self.output = self.model.fit(self.XTrain, 
@@ -124,7 +123,7 @@ class Patal:
                                     validation_split=validation_split,
                                     show_accuracy=show_accuracy, 
                                     verbose=verbose, 
-                                    callbacks=callbacks,
+                                    # callbacks=callbacks,
 									output_file=output_filepath
 									)
 
@@ -132,9 +131,9 @@ class Patal:
         yTest = np.squeeze(self.yTest).astype(int)
         self.finalScore = float(sum(self.yPred==yTest)) / len(yTest)
         myfile = open(output_filepath, 'a')
-		myfile.write(str(self.finalScore) + '\n')
+        myfile.write(str(self.finalScore) + '\n')
         myfile.write(str(metrics.confusion_matrix(yTest, self.yPred)) + '\n')
-		myfile.close()
+        myfile.close()
 
     def generate_graph(self, threshold=0):
         # This function generates a NetworkX graph based on the model setup
@@ -222,6 +221,7 @@ if __name__=='__main__':
             patal.create_network(**JSONDict['CreateNetwork'])
             print("Training Network")
             patal.fit_network(**JSONDict['FitNetwork'])
+            patal.save_model(JSONDict['FitNetwork']['output_filepath'][:-5]+'.hdf5')
             #Need to save weights
-            outputFile.write(str(JSONDict['GenerateLayerMasks']['graphGeneratorParams']['p']+','+str(self.finalScore)+'\n')
+            outputFile.write(str(JSONDict['GenerateLayerMasks']['graphGeneratorParams']['p'])+','+str(self.finalScore)+'\n')
         outputFile.close()
