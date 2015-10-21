@@ -107,7 +107,7 @@ class BaseLogger(Callback):
         if self.verbose:
             print('Epoch %d' % epoch)
             self.progbar = Progbar(target=self.params['nb_sample'], \
-                verbose=self.verbose)
+                verbose=self.verbose, output_file=self.params['output_file'])
         self.seen = 0
         self.totals = {}
 

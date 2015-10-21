@@ -107,13 +107,16 @@ class Patal:
                      batch_size=16, 
                      validation_split=0, 
                      show_accuracy=True, 
-                     verbose=2
+                     verbose='patal,
+					 output_filepath='output_filepath.txt'
                      ):
         # Run the network
         # from keraspatal.callbacks import ModelCheckpoint 
         # checkpoint = ModelCheckpoint(filepath="tmp/weights.hdf5", verbose=1)
         # callbacks=[checkpoint]
-
+		myfile = open(output_filepath, 'w')
+        myfile.write('Timing (s), Loss, Accuracy\n')
+        myfile.close()
         self.output = self.model.fit(self.XTrain, 
                                     self.yTrain, 
                                     nb_epoch=nb_epoch, 
@@ -121,15 +124,17 @@ class Patal:
                                     validation_split=validation_split,
                                     show_accuracy=show_accuracy, 
                                     verbose=verbose, 
-                                    callbacks=callbacks)
+                                    callbacks=callbacks,
+									output_file=output_filepath
+									)
 
-        # Get the 
-        return(self.output.history)
         self.yPred = self.model.predict_classes(self.XTest, verbose=0).astype(int)
         yTest = np.squeeze(self.yTest).astype(int)
         self.finalScore = float(sum(self.yPred==yTest)) / len(yTest)
-        print(self.finalScore)
-        print(metrics.confusion_matrix(yTest, self.yPred))
+        myfile = open(output_filepath, 'a')
+		myfile.write(str(self.finalScore) + '\n')
+        myfile.write(str(metrics.confusion_matrix(yTest, self.yPred)) + '\n')
+		myfile.close()
 
     def generate_graph(self, threshold=0):
         # This function generates a NetworkX graph based on the model setup

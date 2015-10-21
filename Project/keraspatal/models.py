@@ -128,7 +128,7 @@ def model_from_yaml(yaml_string):
 
 class Model(object):
     def _fit(self, f, ins, out_labels=[], batch_size=128, nb_epoch=100, verbose=1, callbacks=[],
-             validation_split=0., val_f=None, val_ins=None, shuffle=True, metrics=[]):
+             validation_split=0., val_f=None, val_ins=None, shuffle=True, metrics=[], output_file='tmpOutput.txt'):
         '''
             Abstract fit function for f(*ins). Assume that f returns a list, labelled by out_labels.
         '''
@@ -163,6 +163,7 @@ class Model(object):
             'verbose': verbose,
             'do_validation': do_validation,
             'metrics': metrics,
+            'output_file': output_file,
         })
         callbacks.on_train_begin()
 
@@ -399,7 +400,7 @@ class Sequential(Model, containers.Sequential):
 
     def fit(self, X, y, batch_size=128, nb_epoch=100, verbose=1, callbacks=[],
             validation_split=0., validation_data=None, shuffle=True, show_accuracy=False,
-            class_weight=None, sample_weight=None):
+            class_weight=None, sample_weight=None, output_file='output_file.txt'):
 
         X = standardize_X(X)
         y = standardize_y(y)
@@ -434,7 +435,7 @@ class Sequential(Model, containers.Sequential):
         return self._fit(f, ins, out_labels=out_labels, batch_size=batch_size, nb_epoch=nb_epoch,
                          verbose=verbose, callbacks=callbacks,
                          validation_split=validation_split, val_f=val_f, val_ins=val_ins,
-                         shuffle=shuffle, metrics=metrics)
+                         shuffle=shuffle, metrics=metrics, output_file=output_file)
 
     def predict(self, X, batch_size=128, verbose=0):
         X = standardize_X(X)

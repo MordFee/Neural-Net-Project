@@ -46,7 +46,7 @@ def printv(v, prefix=''):
 
 
 class Progbar(object):
-    def __init__(self, target, width=30, verbose=1):
+    def __init__(self, target, width=30, verbose=1, output_file='output_file.txt'):
         '''
             @param target: total number of steps expected
         '''
@@ -58,6 +58,7 @@ class Progbar(object):
         self.total_width = 0
         self.seen_so_far = 0
         self.verbose = verbose
+        self.output_file = output_file
 
     def update(self, current, values=[]):
         '''
@@ -75,6 +76,18 @@ class Progbar(object):
         self.seen_so_far = current
 
         now = time.time()
+
+        if self.verbose == 'patal':
+            if current >= self.target:
+                myfile = open(self.output_file, 'a')
+                newText = '%.4f' % (now - self.start)
+                for k in self.unique_values:
+                    newText += ', %.4f' % (self.sum_values[k][0] / max(1, self.sum_values[k][1]))
+                myfile.write(newText + '\n')
+                myfile.close()
+
+
+
         if self.verbose == 1:
             prev_total_width = self.total_width
             sys.stdout.write("\b" * prev_total_width)
