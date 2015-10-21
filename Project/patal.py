@@ -223,5 +223,5 @@ if __name__=='__main__':
             print("Training Network")
             patal.fit_network(**JSONDict['FitNetwork'])
             #Need to save weights
-            myfile.write(str(JSONDict['GenerateLayerMasks']['graphGeneratorParams']['p']+','+str(self.finalScore)+'\n')
+            outputFile.write(str(JSONDict['GenerateLayerMasks']['graphGeneratorParams']['p']+','+str(self.finalScore)+'\n')
         outputFile.close()
