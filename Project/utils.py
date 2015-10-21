@@ -1,6 +1,9 @@
 
 import gzip
-import cPickle
+try:
+    import cPickle
+except ImportError:
+    import pickle as cPickle
 import theano
 import numpy as np
 from theano import tensor as T
@@ -17,7 +20,7 @@ def load_data(dataPath, use_gpu=False):
     """
 
     # Download data
-    f = gzip.open(dataPath, 'rb')
+    f = gzip.open(dataPath, 'r')
     trainSet, validSet, testSet = cPickle.load(f)
     f.close()
 

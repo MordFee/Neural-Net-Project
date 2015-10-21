@@ -1,4 +1,3 @@
-
 import numpy as np
 
 def pseudo_random_square_graph_1( n=int, p=int):
@@ -7,7 +6,7 @@ def pseudo_random_square_graph_1( n=int, p=int):
     Where each node has p edges from entryIndex to entryIndex + p
     """
     if p >=n: # This is fully connected
-        return np.ones( (n, n))
+        return np.ones((n, n))
     maskMatrix = np.zeros( (n,n))
     for i in range(n):
         for j in range(i, p+i):
@@ -60,6 +59,15 @@ def pseudo_random_rect_graph_2( n=int, m=int, proba=list):
                 maskMatrix[i][j] = 1
     return maskMatrix
 
+# aliases
+pseudorect2 = pseudo_random_rect_graph_2
+pseudorect1 = pseudo_random_rect_graph_1
+pseudosquare2 = pseudo_random_square_graph_2
+pseudosquare1 = pseudo_random_square_graph_1
+
+from keraspatal.utils.generic_utils import get_from_module
+def get(identifier, kwargs=None):
+    return get_from_module(identifier, globals(), 'optimizer', instantiate=True, kwargs=kwargs)
 
 
 if __name__=='__main__':

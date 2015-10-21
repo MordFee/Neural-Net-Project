@@ -1,21 +1,74 @@
+import __future__ 
 from utils import *
-from graph_utils import *
+import graph_utils 
+from graph_creation import *
 import numpy as np
 import pandas as pd
-from keras.models import Sequential
-from keras.layers.core import Dense, Dropout, Activation
-from keras.optimizers import SGD
-from keras.utils import np_utils
+from keraspatal.models import Sequential
+from keraspatal.layers.core import Dense, Dropout, Activation
+from keraspatal.optimizers import SGD
+from keraspatal.utils import np_utils
 import networkx as nx
-import warnings
+import warnings, sys, glob, os, json,random
 from time import gmtime, strftime
 from sklearn import metrics
+from functools import reduce
+import keras.datasets.mnist as mnist
 
 class Patal:
-
-    def __init__(self, layerSizes, layerNames=None, dataFileName='mnist_14x14', activationFunction='sigmoid', graph=None):
-        self.layerSizes = layerSizes
+    def __init__(self,dataFileName='mnist_14x14',*args):
+        '''
+        Initialize the Patal class with the data set to be used, so that multiple experiments can be done with the same data:
+            -dataFileName: the name of the data set to be read in, defaults to mnist_14x14
+        '''
         self.dataFileName = dataFileName
+        self.get_and_reshape_datasets(dataFileName)
+
+
+    def get_and_reshape_datasets(self,dataFileName):
+        # Get the datasets -- Deprecated because keras comes with the dataset
+        # dataPath = 'Data/' + dataFileName + '.pkl.gz'
+
+        # self.datasets = load_data(dataPath)
+        # XTrain, yTrain = self.datasets[0]
+        # XTest, yTest = self.datasets[1]
+
+        (XTrain, yTrain), (XTest, yTest) = mnist.load_data()
+        # Reshape datasets
+        yTrain = np_utils.to_categorical(yTrain)
+        self.inputNum = XTrain.size/len(XTrain)
+        self.outputNum = yTrain.size/len(yTrain)
+
+        self.XTrain = XTrain.reshape([len(XTrain), self.inputNum])
+        self.XTest = XTest.reshape([len(XTest), self.inputNum])
+        self.yTrain = yTrain
+        self.yTest = yTest
+
+    def generate_layer_masks(self,graphGeneratorAlias,graphGeneratorParams,layerSizes,seed=333):
+        #graphFunction = graph_utils.get(graphGeneratorAlias)
+        #graphFunction(**graphGeneratorParams)
+        random.seed(seed)
+        return(None)
+
+    def create_network(self, 
+                       layerSizes, 
+                       layerNames=None, 
+                       layerMasks=None,
+                       dropout=0,  
+                       activationFunction='sigmoid',
+                       loss='mse', 
+                       lr=0.01, 
+                       decay=1e-6, 
+                       momentum=0.9, 
+                       nesterov=True,
+                       optimizer = 'sgd',
+                       init='glorot_uniform'):
+
+        self.layerSizes = layerSizes
+        if self.inputNum != self.layerSizes[0]:
+            raise Exception("ERROR, the first layer does not have the right amount of neurons.")
+        if self.outputNum != self.layerSizes[-1]:
+            raise Exception("ERROR, the last layer does not have the right amount of neurons.")
         ##Assign layer names
         if layerNames is not None:
             if len(layerNames) != len(layerSizes):
@@ -26,46 +79,36 @@ class Patal:
         else:
             self.layerNames = ['input'] + ['L'+str(x) for x in range(1,len(layerSizes)-1)] + ['output']
         self.activationFunction = activationFunction
-        self.graph = graph
 
-    def run(self):
-        self.get_and_reshape_datasets()
-        self.create_network()
-        self.fit_network()
-        self.save_results()
+        if layerMasks != None: #Need to generate it based on the graph generations!!
+            self.layerMasks = layerMasks
+        else: #intialize all masks to None type, makes conditionals later one asier. Handled internally in keraspatal
+            self.layerMasks = [None for i in layerSizes]
 
-    def get_and_reshape_datasets(self):
-        # Get the datasets
-        dataPath = '../data/' + dataFileName + '.pkl.gz'
-
-        self.datasets = load_data(dataPath)
-        XTrain, yTrain = self.datasets[0]
-        XTest, yTest = self.datasets[1]
-
-        # Reshape datasets
-        self.yTrain = np_utils.to_categorical(yTrain)
-        self.yTest = yTest
-        input_num = XTrain.shape[1]
-        output_num = self.yTrain.shape[1]
-        if input_num != self.layerSizes[0]:
-            raise Exception("ERROR, the first layer does not have the right amount of neurons.")
-        if output_num != self.layerSizes[-1]:
-            raise Exception("ERROR, the last layer does not have the right amount of neurons.")
-        self.XTrain = XTrain.reshape([len(XTrain), self.layerSizes[0]])
-        self.XTest = XTest.reshape([len(XTest), self.layerSizes[0]])
-
-    def create_network(self, dropout=0, loss='mse', lr=0.01, decay=1e-6, momentum=0.9, nesterov=True):
         # Create the network
         model = Sequential()
         for l in range(1, len(self.layerSizes)):
-            model.add(Dense(self.layerSizes[l-1], self.layerSizes[l]))
-            model.add(Activation(activationFunction))
-            model.add(Dropout(dropout))
+            #Might have to initialize the weights with no connection to zero... there will be an initial update using the connections though shouldn't make a huge difference
+            model.add(Dense(
+                        input_dim = self.layerSizes[l-1], 
+                        output_dim = self.layerSizes[l],
+                        activation=activationFunction,
+                        init = init
+                        ),
+                    self.layerMasks[l-1]) #add the desired mask, works in keraspatal
+            if dropout > 0:
+                model.add(Dropout(dropout))
         sgd = SGD(lr=lr, decay=decay, momentum=momentum, nesterov=nesterov)
         model.compile(loss=loss, optimizer=sgd)
         self.model = model
 
-    def fit_network(self, nb_epoch=20, batch_size=16, validation_split=0, show_accuracy=True, verbose=2):
+    def fit_network(self,
+                     nb_epoch=20, 
+                     batch_size=16, 
+                     validation_split=0, 
+                     show_accuracy=True, 
+                     verbose=2
+                     ):
         # Run the network
         self.output = self.model.fit(self.XTrain, self.yTrain, nb_epoch=nb_epoch, batch_size=batch_size, validation_split=validation_split, show_accuracy=show_accuracy, verbose=verbose)
 
@@ -103,15 +146,24 @@ class Patal:
         self.model.save_weights(filePath)
 
     def load_model(self, filePath):
-        self.model.load_weights(filePath)
+        try:
+            self.model.load_weights(filePath)
+            return(True)
+        except:
+            print('Was unable to save the model to %s' % filePath)
+            return(False)            
+    # def save_configs(self,filePath):
+    #     #TODO: save the configurations of this model to a JSON
+    # def load_configs(self, filepath):
+    #     #TODO: create a patal class from JSON config 
 
-    def get_file_name(self):
+    def get_file_name(self,file_type=".csv"):
         # Get the name of the file
         outputPath = '../results/' + self.dataFileName + str(strftime("%Y%m%d_%Hh%Mm%Ss", gmtime()))
         for l in layerSizes:
             outputPath += '_' + str(l)
         outputPath += '_fc' #Fully connected
-        outputPath += '.csv'
+        outputPath += fileType
 
     def save_results(self):
         # Save the output in a csv
@@ -119,19 +171,35 @@ class Patal:
         df = pd.DataFrame(self.output.history)
         df.to_csv(outputPath)
 
-
+    
 if __name__=='__main__':
-    # Variable
-    # 'mnist_14x14'
-    dataFileName =  'mnist'
-    layerSizes = [28*28, 300, 150, 10]
-    activationFunction = 'sigmoid'
 
-    # Create and run the Patal
-    patal = Patal(layerSizes, dataFileName=dataFileName, activationFunction=activationFunction)
-    patal.run()
+    patal=Patal()
 
-
-
-
-
+    for folderIX in range(1,len(sys.argv)): #for each folde rin the input
+        folder = sys.argv[folderIX] #get that folders path
+        if not os.path.isdir(folder): #make sure it exists
+            print("The director %s does not exists" % (folder))
+            continue
+        #create an output folder in the  outputDir
+        outputDir = 'Results/'+ folder.split('/')[-1] 
+        try:
+            os.mkdir(outputDir)
+        except:
+            print("Folder already Exists")
+        #For each JSON in the Experiment in question
+        for configJSONFile in glob.glob(folder+'/*.json'):
+            try: #Load in the JSON
+                JSONData = open(configJSONFile).read()
+                JSONDict = json.loads(JSONData)
+            except:
+                print("Could not read in file %s" %(configJSONFile))
+                continue
+            #Run the model
+            print("Generating Layer Masks")
+            patal.generate_layer_masks(**JSONDict['GenerateLayerMasks'])
+            print("Creating Network")
+            patal.create_network(**JSONDict['CreateNetwork'])
+            print("Training Network")
+            patal.fit_network(**JSONDict['FitNetwork'])
+            #Need to save weights

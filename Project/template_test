@@ -1,0 +1,8 @@
+{
+	
+	"layerSizes" : [784,300,150,10],
+	"layerNames" : ["input",]
+
+
+
+}
