@@ -1,7 +1,9 @@
-import os, json
+import os, json, random
 from time import gmtime, strftime
+from json import encoder
+encoder.FLOAT_REPR = lambda o: format(o, '.3f')
 
-experimentName = 'Experiment_2'
+experimentName = 'Experiment_1'
 
 def get_json_file_name(layerSizes,
 						graphParameterName=None,
@@ -16,8 +18,6 @@ def get_json_file_name(layerSizes,
 		outputFile += '_fc' #Fully connected
 	else:
 		outputFile += '_'+graphParameterName+'='+str(graphParameterValue)
-	if time:
-		outputFile +=   str(strftime("%Y%m%d_%Hh%Mm%Ss", gmtime()))
 	outputFile += fileType
 	return(outputFile)
 
@@ -39,7 +39,7 @@ Current Options are:
 graphGeneratorAlias = 'random' 
 graphGeneratorParams = {'p' : .6,
 						"layerSizes" : layerSizes} #parameters to be passed to the graph creating function
-seed =333 #random esed set to replicate
+seed = random.randint(0,1000) #random esed set to replicate
 
 JSONDict['GenerateLayerMasks'] ={"graphGeneratorAlias" : graphGeneratorAlias,
 								"graphGeneratorParams" : graphGeneratorParams,
@@ -77,7 +77,7 @@ JSONDict["CreateNetwork"] = {"layerSizes" : layerSizes,
 #Refer to Keras documentation
 nb_epoch = 20
 batch_size = 16 
-validation_split =0
+validation_split = 0
 show_accuracy =True
 verbose = 2
 
@@ -93,10 +93,11 @@ try:
 except:
 	print("Experiment Already Exists")
 #Params to vary
-p_vals = list(x/100 for x in range(0,100))
-print(p_vals)
+p_vals = list(x/100 for x in range(10,100))
 for p in p_vals:
-	JSONDict['GenerateLayerMasks']['p'] = p
+	JSONDict['GenerateLayerMasks']['graphGeneratorParams']['p'] = p
+	#Set seed as well
+	JSONDict['GenerateLayerMasks']['seed'] = random.randint(0,1000)
 	outputFile = get_json_file_name(layerSizes,"p",p)
 	with open(os.path.join(experimentName,outputFile), 'w') as outfile :
 		json.dump(JSONDict, outfile)
