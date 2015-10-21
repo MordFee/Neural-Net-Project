@@ -1,7 +1,7 @@
 import __future__ 
 from utils import *
-import graph_utils 
-from graph_creation import *
+from graph_utils import *
+import graph_creation
 import numpy as np
 import pandas as pd
 from keraspatal.models import Sequential
@@ -44,11 +44,11 @@ class Patal:
         self.yTrain = yTrain
         self.yTest = yTest
 
-    def generate_layer_masks(self,graphGeneratorAlias,graphGeneratorParams,layerSizes,seed=333):
-        #graphFunction = graph_utils.get(graphGeneratorAlias)
-        #graphFunction(**graphGeneratorParams)
+    def generate_layer_masks(self,graphGeneratorAlias,graphGeneratorParams,seed=333):
         random.seed(seed)
-        return(None)
+        layerMasks = graph_creation.get(graphGeneratorAlias,graphGeneratorParams)
+        print(layerMasks)
+        return(layerMasks)
 
     def create_network(self, 
                        layerSizes, 
@@ -110,9 +110,21 @@ class Patal:
                      verbose=2
                      ):
         # Run the network
-        self.output = self.model.fit(self.XTrain, self.yTrain, nb_epoch=nb_epoch, batch_size=batch_size, validation_split=validation_split, show_accuracy=show_accuracy, verbose=verbose)
+        # from keraspatal.callbacks import ModelCheckpoint 
+        # checkpoint = ModelCheckpoint(filepath="tmp/weights.hdf5", verbose=1)
+        # callbacks=[checkpoint]
 
-        # Get the predictions
+        self.output = self.model.fit(self.XTrain, 
+                                    self.yTrain, 
+                                    nb_epoch=nb_epoch, 
+                                    batch_size=batch_size, 
+                                    validation_split=validation_split,
+                                    show_accuracy=show_accuracy, 
+                                    verbose=verbose, 
+                                    callbacks=callbacks)
+
+        # Get the 
+        return(self.output.history)
         self.yPred = self.model.predict_classes(self.XTest, verbose=0).astype(int)
         yTest = np.squeeze(self.yTest).astype(int)
         self.finalScore = float(sum(self.yPred==yTest)) / len(yTest)

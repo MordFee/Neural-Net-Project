@@ -2,9 +2,9 @@
 	"GenerateLayerMasks":{
 		"graphGeneratorAlias": "random",
 		"graphGeneratorParams":{
-			"p" : 0.6
+			"p" : 0.6,
+			"layerSizes":[784,300,150,10]
 		},
-		"layerSizes":[784,300,150,10],
 		"seed": 333
 		},
 	"CreateNetwork":
@@ -22,8 +22,8 @@
         "init":"glorot_uniform"
 	},
 	"FitNetwork":{
-	    "nb_epoch":20, 
-	    "batch_size":16, 
+	    "nb_epoch":10, 
+	    "batch_size":64, 
 	    "validation_split":0, 
 	    "show_accuracy":true, 
 	    "verbose":2
