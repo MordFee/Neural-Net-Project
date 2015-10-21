@@ -107,7 +107,7 @@ class Patal:
                      batch_size=16, 
                      validation_split=0, 
                      show_accuracy=True, 
-                     verbose='patal,
+                     verbose='patal',
 					 output_filepath='output_filepath.txt'
                      ):
         # Run the network
@@ -199,11 +199,14 @@ if __name__=='__main__':
             print("The director %s does not exists" % (folder))
             continue
         #create an output folder in the  outputDir
-        outputDir = 'Results/'+ folder.split('/')[-1] 
+        folderName = folder.split('/')[-1] 
+        outputDir = 'Results/'+ folderName
         try:
             os.mkdir(outputDir)
         except:
             print("Folder already Exists")
+        outputFile = open(outputDir+folderName+'.csv', 'w')
+        outputFile.write('P Value, Accuracy\n')
         #For each JSON in the Experiment in question
         for configJSONFile in glob.glob(folder+'/*.json'):
             try: #Load in the JSON
@@ -220,3 +223,5 @@ if __name__=='__main__':
             print("Training Network")
             patal.fit_network(**JSONDict['FitNetwork'])
             #Need to save weights
+            myfile.write(str(JSONDict['GenerateLayerMasks']['graphGeneratorParams']['p']+','+str(self.finalScore)+'\n')
+        outputFile.close()

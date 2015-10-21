@@ -79,13 +79,15 @@ nb_epoch = 20
 batch_size = 16 
 validation_split = 0
 show_accuracy =True
-verbose = 2
+verbose = 'patal'
+output_filepath= 'output_filepath.txt'
 
 JSONDict['FitNetwork'] = {"nb_epoch":nb_epoch, 
 						  "batch_size":batch_size, 
 						  "validation_split":validation_split, 
 						  "show_accuracy":show_accuracy, 
-						  "verbose":verbose}
+						  "verbose":verbose,
+						  "output_filepath":output_filepath}
 
 ##THE ABOVE ARE STATIC SETTINGS NOW DYNAMIC ONES GO BELOW
 try:
@@ -98,6 +100,10 @@ for p in p_vals:
 	JSONDict['GenerateLayerMasks']['graphGeneratorParams']['p'] = p
 	#Set seed as well
 	JSONDict['GenerateLayerMasks']['seed'] = random.randint(0,1000)
-	outputFile = get_json_file_name(layerSizes,"p",p)
-	with open(os.path.join(experimentName,outputFile), 'w') as outfile :
+	#and the output file name
+	output_filepath = get_json_file_name(layerSizes,"p",p,'.csv')
+	JSONDict['FitNetwork']['output_filepath'] = output_filepath 
+
+	outputFileJSON = get_json_file_name(layerSizes,"p",p)
+	with open(os.path.join(experimentName,outputFileJSON), 'w') as outfile :
 		json.dump(JSONDict, outfile)
