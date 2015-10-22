@@ -61,12 +61,12 @@ def pseudo_random_rect_graph_2( n=int, m=int, proba=list):
     return maskMatrix
 
 def random_graph_fixed_p(p,layerSizes):
-    layerMasks = []
+    layerMasks = [None]#first layer Fully connected
     for i in range(1,len(layerSizes)-1):
         inNum = layerSizes[i]
         outNum = layerSizes[i+1]
         layerMasks.append((np.random.random((inNum,outNum)) <= p).astype(int))
-    return(layerMasks)
+    return(layerMasks.append(None)) #last layer fully connected
 
 # aliases
 pseudorect2 = pseudo_random_rect_graph_2
