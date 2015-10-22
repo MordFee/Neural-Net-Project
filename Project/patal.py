@@ -131,8 +131,8 @@ class Patal:
         yTest = np.squeeze(self.yTest).astype(int)
         self.finalScore = float(sum(self.yPred==yTest)) / len(yTest)
         myfile = open(output_filepath[:-4] + '_matrix.csv', 'w')
-        myfile.write('Final score= ' + str(self.finalScore) + '\n')
-        myfile.write('Matrix = ' + '\n' + str(metrics.confusion_matrix(yTest, self.yPred)) + '\n')
+        myfile.write('Final score = ' + str(self.finalScore) + '\n')
+        myfile.write('Score Matrix: ' + '\n' + str(metrics.confusion_matrix(yTest, self.yPred)) + '\n')
         myfile.close()
 
     def generate_graph(self, threshold=0):
@@ -204,7 +204,7 @@ if __name__=='__main__':
             os.mkdir(outputDir)
         except:
             print("Folder already Exists")
-        outputFile = open(outputDir+folderName+'.csv', 'w')
+        outputFile = open(outputDir + '/' + folderName + '.csv', 'w')
         outputFile.write('P Value, Accuracy\n')
         #For each JSON in the Experiment in question
         for configJSONFile in glob.glob(folder+'/*.json'):
