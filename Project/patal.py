@@ -17,7 +17,7 @@ import keras.datasets.mnist as mnist
 
 class Patal:
 
-    def __init__(self,dataFileName='mnist_14x14',*args):
+    def __init__(self, dataFileName='mnist_14x14', *args):
         '''
         Initialize the Patal class with the data set to be used, so that multiple experiments can be done with the same data:
             -dataFileName: the name of the data set to be read in, defaults to mnist_14x14
@@ -25,7 +25,7 @@ class Patal:
         self.dataFileName = dataFileName
         self.get_and_reshape_datasets(dataFileName)
 
-    def get_and_reshape_datasets(self,dataFileName):
+    def get_and_reshape_datasets(self, dataFileName):
         # Get the datasets -- Deprecated because keras comes with the dataset
         # dataPath = 'Data/' + dataFileName + '.pkl.gz'
 
@@ -44,9 +44,9 @@ class Patal:
         self.yTrain = yTrain
         self.yTest = yTest
 
-    def generate_layer_masks(self,graphGeneratorAlias,graphGeneratorParams,seed=333):
+    def generate_layer_masks(self, graphGeneratorAlias, graphGeneratorParams, seed=333):
         random.seed(seed)
-        layerMasks = graph_creation.get(graphGeneratorAlias,graphGeneratorParams)
+        layerMasks = graph_creation.get(graphGeneratorAlias, graphGeneratorParams)
         return(layerMasks)
 
     def create_network(self, 
@@ -109,10 +109,7 @@ class Patal:
                      verbose='patal',
 					 output_filepath='output_filepath.txt'
                      ):
-        # Run the network
-        # from keraspatal.callbacks import ModelCheckpoint 
-        # checkpoint = ModelCheckpoint(filepath="tmp/weights.hdf5", verbose=1)
-        # callbacks=[checkpoint]
+
         myfile = open(output_filepath, 'w')
         myfile.write('Timing (s), Loss, Accuracy\n')
         myfile.close()
@@ -123,14 +120,13 @@ class Patal:
                                     validation_split=validation_split,
                                     show_accuracy=show_accuracy, 
                                     verbose=verbose, 
-                                    # callbacks=callbacks,
 									output_file=output_filepath
 									)
 
         self.yPred = self.model.predict_classes(self.XTest, verbose=0).astype(int)
         yTest = np.squeeze(self.yTest).astype(int)
         self.finalScore = float(sum(self.yPred==yTest)) / len(yTest)
-        myfile = open(output_filepath[:-4] + '_matrix.csv', 'w')
+        myfile = open(output_filepath[:-5] + '_matrix.csv', 'w')
         myfile.write('Final score = ' + str(self.finalScore) + '\n')
         myfile.write('Score Matrix: ' + '\n' + str(metrics.confusion_matrix(yTest, self.yPred)) + '\n')
         myfile.close()
@@ -173,7 +169,7 @@ class Patal:
     # def load_configs(self, filepath):
     #     #TODO: create a patal class from JSON config 
 
-    def get_file_name(self,file_type=".csv"):
+    def get_file_name(self, file_type=".csv"):
         # Get the name of the file
         outputPath = '../results/' + self.dataFileName + str(strftime("%Y%m%d_%Hh%Mm%Ss", gmtime()))
         for l in self.layerSizes:
@@ -192,7 +188,7 @@ if __name__=='__main__':
 
     patal=Patal()
 
-    for folderIX in range(1,len(sys.argv)): #for each folder in the input
+    for folderIX in range(1, len(sys.argv)): #for each folder in the input
         folder = sys.argv[folderIX] #get that folders path
         if not os.path.isdir(folder): #make sure it exists
             print("The director %s does not exists" % (folder))
@@ -208,7 +204,7 @@ if __name__=='__main__':
         outputFile.write('P Value, Accuracy\n')
         outputFile.close()
         #For each JSON in the Experiment in question
-        for configJSONFile in glob.glob(folder+'/*.json'):
+        for configJSONFile in glob.glob(folder + '/*.json'):
             try: #Load in the JSON
                 JSONData = open(configJSONFile).read()
                 JSONDict = json.loads(JSONData)
@@ -223,8 +219,8 @@ if __name__=='__main__':
             print("Training Network")
             JSONDict['FitNetwork']['output_filepath'] = outputDir + '/' + JSONDict['FitNetwork']['output_filepath']
             patal.fit_network(**JSONDict['FitNetwork'])
-            patal.save_model(outputDir + '/' + JSONDict['FitNetwork']['output_filepath'][:-5]+'.hdf5')
+            patal.save_model(JSONDict['FitNetwork']['output_filepath'][:-5]+'.hdf5')
             #Need to save weights
             outputFile = open(outputDir + '/' + folderName + '.csv', 'a')
-            outputFile.write(str(JSONDict['GenerateLayerMasks']['graphGeneratorParams']['p'])+','+str(patal.finalScore)+'\n')
+            outputFile.write(str(JSONDict['GenerateLayerMasks']['graphGeneratorParams']['p']) + ',' + str(patal.finalScore) + '\n')
             outputFile.close()

@@ -102,7 +102,7 @@ for p in p_vals:
 	JSONDict['GenerateLayerMasks']['seed'] = random.randint(0,1000)
 	#and the output file name
 	output_filepath = get_json_file_name(layerSizes,"p",p,'.csv')
-	JSONDict['FitNetwork']['output_filepath'] = output_filepath 
+	JSONDict['FitNetwork']['output_filepath'] = output_filepath
 
 	outputFileJSON = get_json_file_name(layerSizes,"p",p)
 	with open(os.path.join(experimentName,outputFileJSON), 'w') as outfile :
