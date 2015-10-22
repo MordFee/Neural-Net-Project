@@ -215,7 +215,8 @@ if __name__=='__main__':
             print("Generating Layer Masks")
             layerMasks = patal.generate_layer_masks(**JSONDict['GenerateLayerMasks'])
             print("Creating Network")
-            patal.create_network(**JSONDict['CreateNetwork'],layerMasks = layerMasks)
+            JSONDict['CreateNetwork']['layerMasks'] = layerMasks
+            patal.create_network(**JSONDict['CreateNetwork'])
             print("Training Network")
             JSONDict['FitNetwork']['output_filepath'] = outputDir + '/' + JSONDict['FitNetwork']['output_filepath']
             patal.fit_network(**JSONDict['FitNetwork'])
