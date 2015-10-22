@@ -199,7 +199,7 @@ if __name__=='__main__':
             continue
         #create an output folder in the  outputDir
         folderName = folder.split('/')[-1] 
-        outputDir = 'Results/'+ folderName
+        outputDir = 'Results/' + folderName
         try:
             os.mkdir(outputDir)
         except:
@@ -220,6 +220,7 @@ if __name__=='__main__':
             print("Creating Network")
             patal.create_network(**JSONDict['CreateNetwork'])
             print("Training Network")
+            JSONDict['FitNetwork']['output_filepath'] = outputDir + '/' + JSONDict['FitNetwork']['output_filepath']
             patal.fit_network(**JSONDict['FitNetwork'])
             patal.save_model(JSONDict['FitNetwork']['output_filepath'][:-5]+'.hdf5')
             #Need to save weights
