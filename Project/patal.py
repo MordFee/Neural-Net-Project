@@ -223,5 +223,5 @@ if __name__=='__main__':
             patal.fit_network(**JSONDict['FitNetwork'])
             patal.save_model(JSONDict['FitNetwork']['output_filepath'][:-5]+'.hdf5')
             #Need to save weights
-            outputFile.write(str(JSONDict['GenerateLayerMasks']['graphGeneratorParams']['p'])+','+str(self.finalScore)+'\n')
+            outputFile.write(str(JSONDict['GenerateLayerMasks']['graphGeneratorParams']['p'])+','+str(patal.finalScore)+'\n')
         outputFile.close()
