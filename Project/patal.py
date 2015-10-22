@@ -223,8 +223,8 @@ if __name__=='__main__':
             print("Training Network")
             JSONDict['FitNetwork']['output_filepath'] = outputDir + '/' + JSONDict['FitNetwork']['output_filepath']
             patal.fit_network(**JSONDict['FitNetwork'])
-            patal.save_model(JSONDict['FitNetwork']['output_filepath'][:-5]+'.hdf5')
+            patal.save_model(outputDir + '/' + JSONDict['FitNetwork']['output_filepath'][:-5]+'.hdf5')
             #Need to save weights
-            outputFile = open(outputDir+folderName+'.csv', 'a')
+            outputFile = open(outputDir + '/' + folderName + '.csv', 'a')
             outputFile.write(str(JSONDict['GenerateLayerMasks']['graphGeneratorParams']['p'])+','+str(patal.finalScore)+'\n')
             outputFile.close()
