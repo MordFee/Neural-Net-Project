@@ -206,6 +206,7 @@ if __name__=='__main__':
             print("Folder already Exists")
         outputFile = open(outputDir + '/' + folderName + '.csv', 'w')
         outputFile.write('P Value, Accuracy\n')
+        outputFile.close()
         #For each JSON in the Experiment in question
         for configJSONFile in glob.glob(folder+'/*.json'):
             try: #Load in the JSON
@@ -223,5 +224,6 @@ if __name__=='__main__':
             patal.fit_network(**JSONDict['FitNetwork'])
             patal.save_model(JSONDict['FitNetwork']['output_filepath'][:-5]+'.hdf5')
             #Need to save weights
+            outputFile = open(outputDir+folderName+'.csv', 'a')
             outputFile.write(str(JSONDict['GenerateLayerMasks']['graphGeneratorParams']['p'])+','+str(patal.finalScore)+'\n')
-        outputFile.close()
+            outputFile.close()
