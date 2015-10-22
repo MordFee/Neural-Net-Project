@@ -16,6 +16,7 @@ from functools import reduce
 import keras.datasets.mnist as mnist
 
 class Patal:
+
     def __init__(self,dataFileName='mnist_14x14',*args):
         '''
         Initialize the Patal class with the data set to be used, so that multiple experiments can be done with the same data:
@@ -23,7 +24,6 @@ class Patal:
         '''
         self.dataFileName = dataFileName
         self.get_and_reshape_datasets(dataFileName)
-
 
     def get_and_reshape_datasets(self,dataFileName):
         # Get the datasets -- Deprecated because keras comes with the dataset
@@ -130,9 +130,9 @@ class Patal:
         self.yPred = self.model.predict_classes(self.XTest, verbose=0).astype(int)
         yTest = np.squeeze(self.yTest).astype(int)
         self.finalScore = float(sum(self.yPred==yTest)) / len(yTest)
-        myfile = open(output_filepath, 'a')
-        myfile.write(str(self.finalScore) + '\n')
-        myfile.write(str(metrics.confusion_matrix(yTest, self.yPred)) + '\n')
+        myfile = open(output_filepath[:-4] + '_matrix.csv', 'w')
+        myfile.write('Final score= ' + str(self.finalScore) + '\n')
+        myfile.write('Matrix = ' + '\n' + str(metrics.confusion_matrix(yTest, self.yPred)) + '\n')
         myfile.close()
 
     def generate_graph(self, threshold=0):
@@ -176,10 +176,10 @@ class Patal:
     def get_file_name(self,file_type=".csv"):
         # Get the name of the file
         outputPath = '../results/' + self.dataFileName + str(strftime("%Y%m%d_%Hh%Mm%Ss", gmtime()))
-        for l in layerSizes:
+        for l in self.layerSizes:
             outputPath += '_' + str(l)
         outputPath += '_fc' #Fully connected
-        outputPath += fileType
+        outputPath += file_type
 
     def save_results(self):
         # Save the output in a csv
@@ -192,7 +192,7 @@ if __name__=='__main__':
 
     patal=Patal()
 
-    for folderIX in range(1,len(sys.argv)): #for each folde rin the input
+    for folderIX in range(1,len(sys.argv)): #for each folder in the input
         folder = sys.argv[folderIX] #get that folders path
         if not os.path.isdir(folder): #make sure it exists
             print("The director %s does not exists" % (folder))
