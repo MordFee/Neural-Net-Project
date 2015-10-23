@@ -3,7 +3,7 @@ from time import gmtime, strftime
 from json import encoder
 encoder.FLOAT_REPR = lambda o: format(o, '.3f')
 
-experimentName = 'Experiment_1'
+experimentName = 'Experiment_1_bis'
 
 def get_json_file_name(layerSizes,
 						graphParameterName=None,
@@ -11,13 +11,13 @@ def get_json_file_name(layerSizes,
 						time = True,
 						fileType=".json"):
     # Get the name of the file
-	outputFile = 'LayerSize = '
+	outputFile = 'LayerSize='
 	for l in layerSizes:
 		outputFile +=  str(l) + '_'
 	if graphParameterValue == None:
 		outputFile += '_fc' #Fully connected
 	else:
-		outputFile += '_'+graphParameterName+'='+str(graphParameterValue)
+		outputFile += graphParameterName + '=' + str(graphParameterValue)
 	outputFile += fileType
 	return(outputFile)
 
@@ -95,15 +95,16 @@ try:
 except:
 	print("Experiment Already Exists")
 #Params to vary
-p_vals = list(x/100 for x in range(10,100))
+p_vals = list(float(x)/100. for x in range(1,31))
+print p_vals
 for p in p_vals:
 	JSONDict['GenerateLayerMasks']['graphGeneratorParams']['p'] = p
 	#Set seed as well
 	JSONDict['GenerateLayerMasks']['seed'] = random.randint(0,1000)
 	#and the output file name
-	output_filepath = get_json_file_name(layerSizes,"p",p,'.csv')
+	output_filepath = get_json_file_name(layerSizes, "p", p, '.csv')
 	JSONDict['FitNetwork']['output_filepath'] = output_filepath
 
-	outputFileJSON = get_json_file_name(layerSizes,"p",p)
-	with open(os.path.join(experimentName,outputFileJSON), 'w') as outfile :
+	outputFileJSON = get_json_file_name(layerSizes, "p", p)
+	with open(os.path.join(experimentName, outputFileJSON), 'w') as outfile :
 		json.dump(JSONDict, outfile)
