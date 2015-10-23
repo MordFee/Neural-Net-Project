@@ -1,0 +1,24 @@
+{
+	"GenerateLayerMasks":{
+		"graphGeneratorAlias": "random",
+		"graphGeneratorParams":{
+			"p" : 0.6
+		},
+		"layerSizes":[784,300,150,10],
+		"seed": 333
+		},
+	"CreateNetwork":
+	{
+		"layerSizes" : [784,300,150,10],
+		"layerNames" : ["input","L1","L2","output"],
+		"dropout" : 0,
+		"activationFunction": "sigmoid",
+		"loss":"mse", 
+        "lr":0.01, 
+        "decay":1e-6, 
+        "momentum":0.9, 
+        "nesterov":true,
+        "optimizer" : "sgd",
+        "init":"glorot_uniform"
+	}
+}
