@@ -79,11 +79,11 @@ class Patal:
             self.layerNames = ['input'] + ['L'+str(x) for x in range(1,len(layerSizes)-1)] + ['output']
         self.activationFunction = activationFunction
 
-        if layerMasks != None: #Need to generate it based on the graph generations!!
-            self.layerMasks = layerMasks
-        else: #intialize all masks to None type, makes conditionals later one asier. Handled internally in keraspatal
-            self.layerMasks = [None for i in layerSizes]
-
+        # if layerMasks != None: #Need to generate it based on the graph generations!!
+        #     self.layerMasks = layerMasks
+        # else: #intialize all masks to None type, makes conditionals later one asier. Handled internally in keraspatal
+        #     self.layerMasks = [None for i in layerSizes]
+        self.layerMasks = layerMasks
         # Create the network
         model = Sequential()
         for l in range(1, len(self.layerSizes)):
@@ -109,7 +109,6 @@ class Patal:
                      verbose='patal',
 					 output_filepath='output_filepath.txt'
                      ):
-
         myfile = open(output_filepath, 'w')
         myfile.write('Timing (s), Loss, Accuracy\n')
         myfile.close()
@@ -122,7 +121,6 @@ class Patal:
                                     verbose=verbose, 
 									output_file=output_filepath
 									)
-
         self.yPred = self.model.predict_classes(self.XTest, verbose=0).astype(int)
         yTest = np.squeeze(self.yTest).astype(int)
         self.finalScore = float(sum(self.yPred==yTest)) / len(yTest)
@@ -163,7 +161,13 @@ class Patal:
             return(True)
         except:
             print('Was unable to save the model to %s' % filePath)
-            return(False)            
+            return(False)       
+    def get_number_of_params(self,threshold = 0):
+        weights = self.model.get_weights() #list of W and b's in model
+        total_params = 0
+        for matrix in weights:
+            total_params += np.sum(matrix>threshold)
+        return(total_params)
     # def save_configs(self,filePath):
     #     #TODO: save the configurations of this model to a JSON
     # def load_configs(self, filepath):
@@ -216,6 +220,7 @@ if __name__=='__main__':
             layerMasks = patal.generate_layer_masks(**JSONDict['GenerateLayerMasks'])
             print("Creating Network")
             JSONDict['CreateNetwork']['layerMasks'] = layerMasks
+            print(JSONDict['CreateNetwork'])
             patal.create_network(**JSONDict['CreateNetwork'])
             print("Training Network")
             JSONDict['FitNetwork']['output_filepath'] = outputDir + '/' + JSONDict['FitNetwork']['output_filepath']
