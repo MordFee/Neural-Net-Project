@@ -3,7 +3,7 @@ from time import gmtime, strftime
 from json import encoder
 encoder.FLOAT_REPR = lambda o: format(o, '.3f')
 
-experimentName = 'Experiment_1_bis'
+experimentName = 'Experiment_lists'
 
 def get_json_file_name(layerSizes,
 						graphParameterName=None,
@@ -95,7 +95,15 @@ try:
 except:
 	print("Experiment Already Exists")
 #Params to vary
-p_vals = list(float(x)/100. for x in range(1,31))
+#p_vals = list(float(x)/100. for x in range(1,31))
+numberOfvalues = 100
+rangeOfValues = range(0,numberOfvalues)
+p_val_input = [1 for i in rangeOfValues]
+p_val_layer_1 = [.5 for i in rangeOfValues]
+p_val_layer_2 = [float(x)/100. for x in rangeOfValues]
+p_val_output = [1 for i in rangeOfValues]
+
+p_vals = [list(i) for i in zip(p_val_input,p_val_layer_1,p_val_layer_2,p_val_output)]
 print p_vals
 for p in p_vals:
 	JSONDict['GenerateLayerMasks']['graphGeneratorParams']['p'] = p
