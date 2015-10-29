@@ -22,7 +22,9 @@ def get_json_file_name(layer_sizes,
     return(outputFile)
 
 
-def get_JSON_dict(layer_sizes):
+def get_JSON_dict(layer_sizes,
+                  nb_epoch=20,
+                  batch_size=16):
     ###-----------------Generate Layer Masks
     '''
     Alias for which function to generate the connections for the layer
@@ -47,7 +49,6 @@ def get_JSON_dict(layer_sizes):
 
     #Refer to the keras documentation for layer creation
     layer_sizes = layer_sizes
-    layer_names = ["input","L1","L2","output"]
     dropout = 0
     activation_function= "sigmoid"
     loss="mse"
@@ -59,7 +60,6 @@ def get_JSON_dict(layer_sizes):
     init="glorot_uniform"
 
     JSON_dict["CreateNetwork"] = {"layer_sizes" : layer_sizes,
-                                "layer_names" : layer_names,
                                 "dropout" : dropout,
                                 "activation_function": activation_function,
                                 "loss": loss,
@@ -73,8 +73,6 @@ def get_JSON_dict(layer_sizes):
     ####--------------------------------Fit Network
 
     #Refer to Keras documentation
-    nb_epoch = 20
-    batch_size = 16
     validation_split = 0
     show_accuracy =True
     verbose = 'patal'
@@ -96,6 +94,8 @@ if __name__ == "__main__":
     experiment_name = 'Experiment_'  + unique_id
     os.mkdir(experiment_name)
     JSON_dict = {}
+    nb_epoch = 20
+    batch_size = 16
 
     number_of_values = 90
     initial_layer_size = 100
@@ -105,7 +105,8 @@ if __name__ == "__main__":
         ##General Topology
         moving_layer_size = initial_layer_size + 10.*k
         layer_sizes = [784, 300, moving_layer_size, 10]
-        JSON_dict = get_JSON_dict(layer_sizes)
+
+        JSON_dict = get_JSON_dict(layer_sizes, nb_epoch=nb_epoch, batch_size=batch_size)
 
         moving_proba = initial_layer_size / moving_layer_size * initial_proba
         moving_probas = [1, 1, moving_proba, 1]

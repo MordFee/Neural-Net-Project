@@ -50,8 +50,7 @@ class Patal:
         return(layerMasks)
 
     def create_network(self, 
-                       layer_sizes, 
-                       layer_names=None, 
+                       layer_sizes,
                        layerMasks=None,
                        dropout=0,  
                        activation_function='sigmoid',
@@ -69,14 +68,7 @@ class Patal:
         if self.outputNum != self.layer_sizes[-1]:
             raise Exception("ERROR, the last layer does not have the right amount of neurons.")
         ##Assign layer names
-        if layer_names is not None:
-            if len(layer_names) != len(layer_sizes):
-                print('Warning: there aren\'t as many layer_names as layers, reassigning names')
-                self.layer_names = ['input'] + ['L'+str(x) for x in range(1,len(layer_sizes)-1)] + ['output']
-            else:
-                self.layer_names = layer_names
-        else:
-            self.layer_names = ['input'] + ['L'+str(x) for x in range(1,len(layer_sizes)-1)] + ['output']
+        self.layer_names = ['input'] + ['L'+str(x) for x in range(1,len(layer_sizes)-1)] + ['output']
         self.activation_function = activation_function
 
         # if layerMasks != None: #Need to generate it based on the graph generations!!
@@ -226,6 +218,7 @@ if __name__=='__main__':
             print("Training Network")
             JSON_dict['FitNetwork']['output_filepath'] = outputDir + '/' + JSON_dict['FitNetwork']['output_filepath']
             patal.fit_network(**JSON_dict['FitNetwork'])
+
             patal.save_model(JSON_dict['FitNetwork']['output_filepath'][:-5]+'.hdf5')
             #Need to save weights
             outputFile = open(outputDir + '/' + folderName + '.csv', 'a')
