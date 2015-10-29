@@ -60,13 +60,13 @@ def pseudo_random_rect_graph_2( n=int, m=int, proba=list):
                 maskMatrix[i][j] = 1
     return maskMatrix
 
-def random_graph_list_of_p(p,layerSizes):
-    if(len(p) != len(layerSizes)):
+def random_graph_list_of_p(p,layer_sizes):
+    if(len(p) != len(layer_sizes)):
         raise Exception("ERROR, the length of p is not the same as the length of layers")
     layerMasks = []
-    for i in range(0,len(layerSizes)-1):
-        inNum = layerSizes[i]
-        outNum = layerSizes[i+1]
+    for i in range(0,len(layer_sizes)-1):
+        inNum = layer_sizes[i]
+        outNum = layer_sizes[i+1]
         layerMasks.append((np.random.random((inNum,outNum)) <= p[i]).astype(int))
     return(layerMasks) 
 # aliases

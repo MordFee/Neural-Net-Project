@@ -50,11 +50,11 @@ class Patal:
         return(layerMasks)
 
     def create_network(self, 
-                       layerSizes, 
-                       layerNames=None, 
+                       layer_sizes, 
+                       layer_names=None, 
                        layerMasks=None,
                        dropout=0,  
-                       activationFunction='sigmoid',
+                       activation_function='sigmoid',
                        loss='mse', 
                        lr=0.01, 
                        decay=1e-6, 
@@ -63,35 +63,35 @@ class Patal:
                        optimizer = 'sgd',
                        init='glorot_uniform'):
 
-        self.layerSizes = layerSizes
-        if self.inputNum != self.layerSizes[0]:
+        self.layer_sizes = layer_sizes
+        if self.inputNum != self.layer_sizes[0]:
             raise Exception("ERROR, the first layer does not have the right amount of neurons.")
-        if self.outputNum != self.layerSizes[-1]:
+        if self.outputNum != self.layer_sizes[-1]:
             raise Exception("ERROR, the last layer does not have the right amount of neurons.")
         ##Assign layer names
-        if layerNames is not None:
-            if len(layerNames) != len(layerSizes):
-                print('Warning: there aren\'t as many layerNames as layers, reassigning names')
-                self.layerNames = ['input'] + ['L'+str(x) for x in range(1,len(layerSizes)-1)] + ['output']
+        if layer_names is not None:
+            if len(layer_names) != len(layer_sizes):
+                print('Warning: there aren\'t as many layer_names as layers, reassigning names')
+                self.layer_names = ['input'] + ['L'+str(x) for x in range(1,len(layer_sizes)-1)] + ['output']
             else:
-                self.layerNames = layerNames
+                self.layer_names = layer_names
         else:
-            self.layerNames = ['input'] + ['L'+str(x) for x in range(1,len(layerSizes)-1)] + ['output']
-        self.activationFunction = activationFunction
+            self.layer_names = ['input'] + ['L'+str(x) for x in range(1,len(layer_sizes)-1)] + ['output']
+        self.activation_function = activation_function
 
         # if layerMasks != None: #Need to generate it based on the graph generations!!
         #     self.layerMasks = layerMasks
         # else: #intialize all masks to None type, makes conditionals later one asier. Handled internally in keraspatal
-        #     self.layerMasks = [None for i in layerSizes]
+        #     self.layerMasks = [None for i in layer_sizes]
         self.layerMasks = layerMasks
         # Create the network
         model = Sequential()
-        for l in range(1, len(self.layerSizes)):
+        for l in range(1, len(self.layer_sizes)):
             #Might have to initialize the weights with no connection to zero... there will be an initial update using the connections though shouldn't make a huge difference
             model.add(Dense(
-                        input_dim = self.layerSizes[l-1], 
-                        output_dim = self.layerSizes[l],
-                        activation=activationFunction,
+                        input_dim = self.layer_sizes[l-1], 
+                        output_dim = self.layer_sizes[l],
+                        activation=activation_function,
                         init = init
                         ),
                     self.layerMasks[l-1]) #add the desired mask, works in keraspatal
@@ -123,20 +123,20 @@ class Patal:
 									)
         self.yPred = self.model.predict_classes(self.XTest, verbose=0).astype(int)
         yTest = np.squeeze(self.yTest).astype(int)
-        self.finalScore = float(sum(self.yPred==yTest)) / len(yTest)
+        self.final_score = float(sum(self.yPred==yTest)) / len(yTest)
         myfile = open(output_filepath[:-5] + '_matrix.csv', 'w')
-        myfile.write('Final score = ' + str(self.finalScore) + '\n')
+        myfile.write('Final score = ' + str(self.final_score) + '\n')
         myfile.write('Score Matrix: ' + '\n' + str(metrics.confusion_matrix(yTest, self.yPred)) + '\n')
         myfile.close()
 
     def generate_graph(self, threshold=0):
         # This function generates a NetworkX graph based on the model setup
-        self.graph = keras_to_graph(self.model, self.layerNames, threshold)
+        self.graph = keras_to_graph(self.model, self.layer_names, threshold)
 
     def plot_graph(self, weighted=False, scaling=lambda x:x):
         # This function plots the current state of the feed forward neural net
         if self.graph == nx.classes.digraph.DiGraph:
-            plot_forward_neural_net(self.graph ,self.layerNames, weighted=weighted, scaling=scaling)
+            plot_forward_neural_net(self.graph ,self.layer_names, weighted=weighted, scaling=scaling)
         else:
             warnings.warn("Graph has not been generated correctly; cannot plot!", RuntimeWarning)
 
@@ -148,7 +148,7 @@ class Patal:
         cols = ["Metric Name "] + ['fullModel']
         metrics = [metric.__name__, metric(self.graph)]
         if layers:
-            cols = cols + ['%s to %s' % t for t in zip(self.layerNames[:-1], self.layerNames[1:])]
+            cols = cols + ['%s to %s' % t for t in zip(self.layer_names[:-1], self.layer_names[1:])]
             metrics = [metric(self.graph.subgraph(layer)) for layer in separate_layers(self.graph)]
         return pd.DataFrame(metrics, columns=cols)
 
@@ -162,6 +162,7 @@ class Patal:
         except:
             print('Was unable to save the model to %s' % filePath)
             return(False)       
+        
     def get_number_of_params(self,threshold = 0):
         weights = self.model.get_weights() #list of W and b's in model
         total_params = 0
@@ -176,7 +177,7 @@ class Patal:
     def get_file_name(self, file_type=".csv"):
         # Get the name of the file
         outputPath = '../results/' + self.dataFileName + str(strftime("%Y%m%d_%Hh%Mm%Ss", gmtime()))
-        for l in self.layerSizes:
+        for l in self.layer_sizes:
             outputPath += '_' + str(l)
         outputPath += '_fc' #Fully connected
         outputPath += file_type
@@ -208,25 +209,25 @@ if __name__=='__main__':
         outputFile.write('P Value, Accuracy\n')
         outputFile.close()
         #For each JSON in the Experiment in question
-        for configJSONFile in glob.glob(folder + '/*.json'):
+        for config_JSON_file in glob.glob(folder + '/*.json'):
             try: #Load in the JSON
-                JSONData = open(configJSONFile).read()
-                JSONDict = json.loads(JSONData)
+                JSONData = open(config_JSON_file).read()
+                JSON_dict = json.loads(JSONData)
             except:
-                print("Could not read in file %s" %(configJSONFile))
+                print("Could not read in file %s" %(config_JSON_file))
                 continue
             #Run the model
             print("Generating Layer Masks")
-            layerMasks = patal.generate_layer_masks(**JSONDict['GenerateLayerMasks'])
+            layerMasks = patal.generate_layer_masks(**JSON_dict['GenerateLayerMasks'])
             print("Creating Network")
-            JSONDict['CreateNetwork']['layerMasks'] = layerMasks
-            print(JSONDict['CreateNetwork'])
-            patal.create_network(**JSONDict['CreateNetwork'])
+            JSON_dict['CreateNetwork']['layerMasks'] = layerMasks
+            print(JSON_dict['CreateNetwork'])
+            patal.create_network(**JSON_dict['CreateNetwork'])
             print("Training Network")
-            JSONDict['FitNetwork']['output_filepath'] = outputDir + '/' + JSONDict['FitNetwork']['output_filepath']
-            patal.fit_network(**JSONDict['FitNetwork'])
-            patal.save_model(JSONDict['FitNetwork']['output_filepath'][:-5]+'.hdf5')
+            JSON_dict['FitNetwork']['output_filepath'] = outputDir + '/' + JSON_dict['FitNetwork']['output_filepath']
+            patal.fit_network(**JSON_dict['FitNetwork'])
+            patal.save_model(JSON_dict['FitNetwork']['output_filepath'][:-5]+'.hdf5')
             #Need to save weights
             outputFile = open(outputDir + '/' + folderName + '.csv', 'a')
-            outputFile.write(str(JSONDict['GenerateLayerMasks']['graphGeneratorParams']['p']) + ',' + str(patal.finalScore) + '\n')
+            outputFile.write(str(JSON_dict['GenerateLayerMasks']['graphGeneratorParams']['p']) + ',' + str(patal.final_score) + '\n')
             outputFile.close()
