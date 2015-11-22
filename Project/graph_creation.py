@@ -60,6 +60,53 @@ def pseudo_random_rect_graph_2( n=int, m=int, proba=list):
                 maskMatrix[i][j] = 1
     return maskMatrix
 
+
+def fibonacci_sparse_matrix(n=int, m=int, k=int):
+    mask_matrix = np.zeros( (n,m))
+    f_vector = get_fibonacci_vector(m, k)
+    for i in range(n):
+        for j in range(m):
+            mask_matrix[i][j] = f_vector[(j-i)%m]
+    return mask_matrix
+
+def get_fibonacci_vector(m=int, k=int):
+    f_vector = np.zeros(m)
+    if k == 1:
+        f_vector[0] = 1
+    else:
+        f_list = [1,2]
+        while len(f_list) < k:
+            f_list.append(f_list[-1]+f_list[-2])
+        if f_list[-1] <= m:
+            for f in f_list:
+                f_vector[f-1] = 1
+        else:
+            f_list = map(lambda(a): a*(m-1)/f_list[-1], f_list)
+            for f in f_list:
+                while f_vector[f] == 1:
+                    f += 1
+                f_vector[f] = 1
+    return f_vector
+
+def long_short_sparse_matrix(n=int, m=int, k=int):
+    mask_matrix = np.zeros( (n,m))
+    f_vector = get_long_short_vector(m, k)
+    for i in range(n):
+        for j in range(m):
+            mask_matrix[i][j] = f_vector[(j-i)%m]
+    return mask_matrix
+
+def get_long_short_vector(m=int, k=int):
+    f_vector = np.zeros(m)
+    if k == 1:
+        f_vector[0] = 1
+    else:
+        for i in range(k/2):
+            f_vector[i] = 1
+        for i in range((k+1)/2):
+            f_vector[k/2 + i * (m-k/2) / ((k+1)/2)] = 1
+    return f_vector
+
 def random_graph_list_of_p(p,layer_sizes):
     if(len(p) != len(layer_sizes)):
         raise Exception("ERROR, the length of p is not the same as the length of layers")
