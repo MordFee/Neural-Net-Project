@@ -108,14 +108,36 @@ def get_long_short_vector(m=int, k=int):
     return f_vector
 
 def random_graph_list_of_p(p,layer_sizes):
-    if(len(p) != len(layer_sizes)):
+    if(len(p) != len(layer_sizes)-1):
         raise Exception("ERROR, the length of p is not the same as the length of layers")
     layerMasks = []
     for i in range(0,len(layer_sizes)-1):
         inNum = layer_sizes[i]
         outNum = layer_sizes[i+1]
         layerMasks.append((np.random.random((inNum,outNum)) <= p[i]).astype(int))
-    return(layerMasks) 
+    return(layerMasks)
+
+def fibonacci(k,layer_sizes):
+    if(len(k) != len(layer_sizes)-1):
+        raise Exception("ERROR, the length of k is not the same as the length of layers")
+    layerMasks = []
+    for i in range(0,len(layer_sizes)-1):
+        inNum = layer_sizes[i]
+        outNum = layer_sizes[i+1]
+        layerMasks.append(fibonacci_sparse_matrix(inNum,outNum,k[i]))
+    return(layerMasks)
+
+def long_short(k,layer_sizes):
+    if(len(k) != len(layer_sizes)-1):
+        raise Exception("ERROR, the length of k is not the same as the length of layers")
+    layerMasks = []
+    for i in range(0,len(layer_sizes)-1):
+        inNum = layer_sizes[i]
+        outNum = layer_sizes[i+1]
+        layerMasks.append(long_short_sparse_matrix(inNum,outNum,k[i]))
+    return(layerMasks)
+
+
 # aliases
 pseudorect2 = pseudo_random_rect_graph_2
 pseudorect1 = pseudo_random_rect_graph_1
