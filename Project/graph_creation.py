@@ -137,6 +137,19 @@ def long_short(k,layer_sizes):
         layerMasks.append(long_short_sparse_matrix(inNum,outNum,k[i]))
     return(layerMasks)
 
+def random_expander(d,layer_sizes):
+    if(len(k) != len(layer_sizes)-1):
+        raise Exception("ERROR, the length of d is not the same as the length of layers")
+    layerMasks = []
+    for i in range(0,len(layer_sizes)-1):
+        inNum = layer_sizes[i]
+        outNum = layer_sizes[i+1]
+        random_matrix = np.random.random((inNum,outNum))
+        partitions = np.partition(random_matrix,-d)[:,-d][:,np.newaxis] #find the indexes of the dth largest elements
+        layerMasks.append(np.greater_equal(a,partitions).astype(int))
+    return(layerMasks)
+
+
 
 # aliases
 pseudorect2 = pseudo_random_rect_graph_2
@@ -144,6 +157,7 @@ pseudorect1 = pseudo_random_rect_graph_1
 pseudosquare2 = pseudo_random_square_graph_2
 pseudosquare1 = pseudo_random_square_graph_1
 random =  random_graph_list_of_p
+expander = random_expander
 
 
 from keraspatal.utils.generic_utils import get_from_module
