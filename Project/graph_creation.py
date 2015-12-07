@@ -1,73 +1,7 @@
 import numpy as np
 import random
 
-def pseudo_random_square_graph_1( n=int, p=int):
-    """
-    Returns a n*n binary matrix.
-    Where each node has p edges from entryIndex to entryIndex + p
-    """
-    if p >=n: # This is fully connected
-        return np.ones((n, n))
-    maskMatrix = np.zeros( (n,n))
-    for i in range(n):
-        for j in range(i, p+i):
-            k = j % n
-            maskMatrix[i][k] = 1
-    return maskMatrix
-
-def pseudo_random_square_graph_2( n=int, proba=list):
-    """
-    Returns a n*n binary matrix.
-    proba is a list of n floats between 0 and 1.
-    Each node i has the probability proba[i] to have an edge node j
-    """
-    maskMatrix = np.zeros( (n,n))
-    for i in range(n):
-        for j in range(n):
-            r = np.random.random()
-            if r <= proba[i]:
-                maskMatrix[i][j] = 1
-    return maskMatrix
-
-
-def pseudo_random_rect_graph_1( n=int, m=int, p=int):
-    #TODO Check that it is n inputs & m outputs and not the opposite
-    """
-    Returns a n input, m output binary matrix.
-    Where each node has p edges from entryIndex to entryIndex + p
-    """
-    if p >= m: # This is fully connected
-        return np.ones( (n, m))
-    maskMatrix = np.zeros( (n, m))
-    for i in range(n):
-        for j in range(i, p+i):
-            k = j % m
-            maskMatrix[i][k] = 1
-    return maskMatrix
-
-def pseudo_random_rect_graph_2( n=int, m=int, proba=list):
-    #TODO Check that it is n inputs & m outputs and not the opposite
-    """
-    Returns a n input, m output binary matrix.
-    proba is a list of n floats between 0 and 1.
-    Each node i has the probability proba[i] to have an edge node j
-    """
-    maskMatrix = np.zeros( (n,m))
-    for i in range(n):
-        for j in range(m):
-            r = np.random.random()
-            if r <= proba[i]:
-                maskMatrix[i][j] = 1
-    return maskMatrix
-
-
-def fibonacci_sparse_matrix(n=int, m=int, k=int):
-    mask_matrix = np.zeros( (n,m))
-    f_vector = get_fibonacci_vector(m, k)
-    for i in range(n):
-        for j in range(m):
-            mask_matrix[i][j] = f_vector[(j-i)%m]
-    return mask_matrix
+# Vector
 
 def get_fibonacci_vector(m=int, k=int):
     f_vector = np.zeros(m)
@@ -88,14 +22,6 @@ def get_fibonacci_vector(m=int, k=int):
                 f_vector[f] = 1
     return f_vector
 
-def long_short_sparse_matrix(n=int, m=int, k=int):
-    mask_matrix = np.zeros( (n,m))
-    f_vector = get_long_short_vector(m, k)
-    for i in range(n):
-        for j in range(m):
-            mask_matrix[i][j] = f_vector[(j-i)%m]
-    return mask_matrix
-
 def get_long_short_vector(m=int, k=int):
     f_vector = np.zeros(m)
     if k == 1:
@@ -107,69 +33,125 @@ def get_long_short_vector(m=int, k=int):
             f_vector[k/2 + i * (m-k/2) / ((k+1)/2)] = 1
     return f_vector
 
-def random_graph_list_of_p(p,layer_sizes):
-    if(len(p) != len(layer_sizes)-1):
-        raise Exception("ERROR, the length of p is not the same as the length of layers")
-    layerMasks = []
+def get_random_vector(m=int, k=int):
+    rand_vector = np.arange(m)
+    np.random.shuffle(rand_vector)
+    for i in range(m):
+        rand_vector[i] = 1 if rand_vector[i] < k else 0
+    return rand_vector
+
+def get_regular_vector(m=int, k=int):
+    reg_vector = np.zeros(m)
+    for i in range(k):
+        reg_vector[i] = 1
+    return reg_vector
+
+# Matrix
+
+def fibonacci_sparse_matrix(n=int, m=int, k=int):
+    mask_matrix = np.zeros( (n,m))
+    f_vector = get_fibonacci_vector(m, k)
+    for i in range(n):
+        for j in range(m):
+            mask_matrix[i][j] = f_vector[(j-i)%m]
+    return mask_matrix
+
+def long_short_sparse_matrix(n=int, m=int, k=int):
+    mask_matrix = np.zeros( (n,m))
+    f_vector = get_long_short_vector(m, k)
+    for i in range(n):
+        for j in range(m):
+            mask_matrix[i][j] = f_vector[(j-i)%m]
+    return mask_matrix
+
+def regular_matrix(n=int, m=int, k=int):
+    mask_matrix = np.zeros( (n,m))
+    reg_vector = get_regular_vector(m, k)
+    for i in range(n):
+        for j in range(m):
+            mask_matrix[i][j] = reg_vector[(j-i)%m]
+    return mask_matrix
+
+def rand_vector_circulant_matrix(n=int, m=int, k=int):
+    mask_matrix = np.zeros( (n,m))
+    f_vector = get_random_vector(m, k)
+    for i in range(n):
+        for j in range(m):
+            mask_matrix[i][j] = f_vector[(j-i)%m]
+    return mask_matrix
+
+
+# Graph
+
+def random_graph(degrees=[], layer_sizes=[]):
+    if(len(degrees) != len(layer_sizes)-1):
+        raise Exception("ERROR, the length of degree is not the same as the length of layers")
+    layer_masks = []
     for i in range(0,len(layer_sizes)-1):
-        inNum = layer_sizes[i]
-        outNum = layer_sizes[i+1]
-        layerMasks.append((np.random.random((inNum,outNum)) <= p[i]).astype(int))
-    return(layerMasks)
+        input_size = layer_sizes[i]
+        output_size = layer_sizes[i+1]
+        layer_masks.append((np.random.random((input_size,output_size)) <= degrees[i]/float(output_size)).astype(int))
+    return(layer_masks)
 
-def fibonacci(k,layer_sizes):
-    if(len(k) != len(layer_sizes)-1):
-        raise Exception("ERROR, the length of k is not the same as the length of layers")
-    layerMasks = []
+def fibonacci_graph(degrees=[], layer_sizes=[]):
+    if(len(degrees) != len(layer_sizes)-1):
+        raise Exception("ERROR, the length of degrees is not the same as the length of layers")
+    layer_masks = []
     for i in range(0,len(layer_sizes)-1):
-        inNum = layer_sizes[i]
-        outNum = layer_sizes[i+1]
-        layerMasks.append(fibonacci_sparse_matrix(inNum,outNum,k[i]))
-    return(layerMasks)
+        input_size = layer_sizes[i]
+        output_size = layer_sizes[i+1]
+        layer_masks.append(fibonacci_sparse_matrix(input_size,output_size,degrees[i]))
+    return(layer_masks)
 
-def long_short(k,layer_sizes):
-    if(len(k) != len(layer_sizes)-1):
-        raise Exception("ERROR, the length of k is not the same as the length of layers")
-    layerMasks = []
+def long_short_graph(degrees=[], layer_sizes=[]):
+    if(len(degrees) != len(layer_sizes)-1):
+        raise Exception("ERROR, the length of degrees is not the same as the length of layers")
+    layer_masks = []
     for i in range(0,len(layer_sizes)-1):
-        inNum = layer_sizes[i]
-        outNum = layer_sizes[i+1]
-        layerMasks.append(long_short_sparse_matrix(inNum,outNum,k[i]))
-    return(layerMasks)
+        input_size = layer_sizes[i]
+        output_size = layer_sizes[i+1]
+        layer_masks.append(long_short_sparse_matrix(input_size,output_size,degrees[i]))
+    return(layer_masks)
 
-def random_expander(d,layer_sizes):
-    if(len(k) != len(layer_sizes)-1):
-        raise Exception("ERROR, the length of d is not the same as the length of layers")
-    layerMasks = []
+def regular_graph(degrees=[], layer_sizes=[]):
+    if(len(degrees) != len(layer_sizes)-1):
+        raise Exception("ERROR, the length of degrees is not the same as the length of layers")
+    layer_masks = []
     for i in range(0,len(layer_sizes)-1):
-        inNum = layer_sizes[i]
-        outNum = layer_sizes[i+1]
-        random_matrix = np.random.random((inNum,outNum))
-        partitions = np.partition(random_matrix,-d)[:,-d][:,np.newaxis] #find the indexes of the dth largest elements
-        layerMasks.append(np.greater_equal(a,partitions).astype(int))
-    return(layerMasks)
+        input_size = layer_sizes[i]
+        output_size = layer_sizes[i+1]
+        layer_masks.append(regular_matrix(input_size,output_size,degrees[i]))
+    return(layer_masks)
 
+def random_vector_cirgulant_graph(degrees=[], layer_sizes=[]):
+    if(len(degrees) != len(layer_sizes)-1):
+        raise Exception("ERROR, the length of degrees is not the same as the length of layers")
+    layer_masks = []
+    for i in range(0,len(layer_sizes)-1):
+        input_size = layer_sizes[i]
+        output_size = layer_sizes[i+1]
+        layer_masks.append(rand_vector_circulant_matrix(input_size,output_size,degrees[i]))
+    return(layer_masks)
 
+def random_expander_graph(degrees=[], layer_sizes=[]):
+    if(len(degrees) != len(layer_sizes)-1):
+        raise Exception("ERROR, the length of degrees is not the same as the length of layers")
+    layer_masks = []
+    for i in range(0,len(layer_sizes)-1):
+        input_size = layer_sizes[i]
+        output_size = layer_sizes[i+1]
+        random_matrix = np.random.random((input_size,output_size))
+        partitions = np.partition(random_matrix,-degrees[i])[:,-degrees[i]][:,np.newaxis] #find the indexes of the degree th largest elements
+        layer_masks.append(np.greater_equal(random_matrix,partitions).astype(int))
+    return(layer_masks)
 
-# aliases
-pseudorect2 = pseudo_random_rect_graph_2
-pseudorect1 = pseudo_random_rect_graph_1
-pseudosquare2 = pseudo_random_square_graph_2
-pseudosquare1 = pseudo_random_square_graph_1
-random =  random_graph_list_of_p
-expander = random_expander
+def regular_expander_graph(degrees=[], layer_sizes=[]):
+    #TODO 
+    return
+
 
 
 from keraspatal.utils.generic_utils import get_from_module
 
 def get(identifier, kwargs=None):
     return get_from_module(identifier, globals(), 'graph_creation', instantiate=True, kwargs=kwargs)
-
-
-# if __name__=='__main__':
-
-#     print(pseudo_random_square_graph_1(10,3))
-#     #print(pseudo_random_square_graph_2(10,[1, 0.5, 0.5, 0.5, 0, 0, 0, 0, 1, 0.5]))
-
-#     #print(pseudo_random_rect_graph_1(10, 5, 3))
-#     #print(pseudo_random_rect_graph_2(10, 5, [1, 0.5, 0.5, 0.5, 0, 0, 0, 0, 1, 0.5]))

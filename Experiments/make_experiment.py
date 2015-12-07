@@ -6,23 +6,21 @@ from json import encoder
 
 
 def get_json_file_name(layer_sizes,
-                        graphParameterName=None,
-                        graphParameterValue=None,
+                        degrees,
+                        alias,
                         fileType=".json",
                         unique_id=''):
     # Get the name of the file
-    outputFile = 'LayerSize='
-    for l in layer_sizes:
-        outputFile +=  str(l) + '_'
-    if graphParameterValue == None:
-        outputFile += '_fc' #Fully connected
-    else:
-        outputFile += graphParameterName + '=' + str(graphParameterValue)
+    outputFile = 'Layers=' + str(layer_sizes)
+    outputFile += '_Degrees=' + str(degrees)
+    outputFile += '_Alias=' + str(alias)
     outputFile += '_' + unique_id + fileType
     return(outputFile)
 
 
-def get_JSON_dict(layer_sizes,
+def get_JSON_dict(degrees,
+                  layer_sizes,
+                  graphGeneratorAlias,
                   nb_epoch=20,
                   batch_size=16):
     ###-----------------Generate Layer Masks
@@ -36,8 +34,7 @@ def get_JSON_dict(layer_sizes,
     -psuedosquare2
     '''
 
-    graphGeneratorAlias = 'random'
-    graphGeneratorParams = {'p' : .6,
+    graphGeneratorParams = {'degrees' : degrees,
                             "layer_sizes" : layer_sizes} #parameters to be passed to the graph creating function
     seed = random.randint(0,1000) #random esed set to replicate
 
@@ -90,39 +87,54 @@ def get_JSON_dict(layer_sizes,
 
 if __name__ == "__main__":
     encoder.FLOAT_REPR = lambda o: format(o, '.3f')
-    unique_id = str(strftime("%Y%m%d_%Hh%Mm%Ss", gmtime()))
+    #unique_id = str(strftime("%Y%m%d_%Hh%Mm%Ss", gmtime()))
+
+    hidden_layer = 500
+    graph_alias = 'random_graph'
+    #graph_alias = 'fibonacci_graph'
+    #graph_alias = 'long_short_graph'
+    #graph_alias = 'regular_graph'
+    #graph_alias = 'random_vector_cirgulant_graph'
+    #graph_alias = 'random_expander_graph'
+    #graph_alias = 'regular_expander_graph'
+    degree_hidden = 2
+
+    unique_id = 'H=' + str(hidden_layer)
+    unique_id += '_D=' + str(degree_hidden)
+    unique_id += '_A=' + str(graph_alias)
+
     experiment_name = 'Experiment_'  + unique_id
     os.mkdir(experiment_name)
     JSON_dict = {}
-    nb_epoch = 20
-    batch_size = 16
 
-    number_of_values = 90
-    initial_layer_size = 100
-    initial_proba = 1
-    for k in range(number_of_values+1):
+    nb_epoch = 50
+    batch_size = 32
 
-        ##General Topology
-        moving_layer_size = initial_layer_size + 10.*k
-        layer_sizes = [784, 300, moving_layer_size, 10]
+    layer_sizes = [784, hidden_layer, 10]
+    degree_list1 = [3*i for i in range(1, 20)]
+    degree_list2 = [10*i for i in range(6, 20)]
+    degree_list3 = [25*i for i in range(8, 21)]
+    degree_list = degree_list1 + degree_list2 + degree_list3
+    print degree_list
+    for degree in degree_list:
 
-        JSON_dict = get_JSON_dict(layer_sizes, nb_epoch=nb_epoch, batch_size=batch_size)
 
-        moving_proba = initial_layer_size / moving_layer_size * initial_proba
-        moving_probas = [1, 1, moving_proba, 1]
-        p = moving_probas
+        degrees = [degree, degree_hidden]
 
-        JSON_dict['GenerateLayerMasks']['graphGeneratorParams']['p'] = p
+        JSON_dict = get_JSON_dict(degrees, layer_sizes, graph_alias, nb_epoch=nb_epoch, batch_size=batch_size)
+
+
+
         #Set seed as well
         JSON_dict['GenerateLayerMasks']['seed'] = random.randint(0,1000)
         #and the output file name
-        output_filepath = get_json_file_name(layer_sizes, "p", p, fileType='.csv', unique_id=unique_id)
+        output_filepath = get_json_file_name(layer_sizes, degrees, graph_alias, fileType='.csv')
         JSON_dict['FitNetwork']['output_filepath'] = output_filepath
 
-        output_file_JSON = get_json_file_name(layer_sizes, "p", p, unique_id=unique_id)
-        file = open(os.path.join(experiment_name, output_file_JSON), 'w')
-        json.dump(JSON_dict, file)
-        file.close()
+        output_file_JSON = get_json_file_name(layer_sizes, degrees, graph_alias)
+        f = open(os.path.join(experiment_name, output_file_JSON), 'w')
+        json.dump(JSON_dict, f)
+        f.close()
 
     # Save this JSON creator file
     saved_make_exp = open(os.path.join(experiment_name, 'make_experiment.py'), 'w')
