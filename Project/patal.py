@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 from keraspatal.models import Sequential
 from keraspatal.layers.core import Dense, Dropout, Activation
-from keraspatal.optimizers import SGD
+from keraspatal.optimizers import SGD, Adadelta
 from keraspatal.utils import np_utils
 import networkx as nx
 import warnings, sys, glob, os, json,random
@@ -90,6 +90,12 @@ class Patal:
             if dropout > 0:
                 model.add(Dropout(dropout))
         sgd = SGD(lr=lr, decay=decay, momentum=momentum, nesterov=nesterov)
+
+        lr = 1.
+        rho = 0.95
+        epsilon = 0.000001
+        ada = Adadelta(lr=lr,rho=rho,epsilon=epsilon)
+
         model.compile(loss=loss, optimizer=sgd)
         self.model = model
 
@@ -222,5 +228,5 @@ if __name__=='__main__':
             patal.save_model(JSON_dict['FitNetwork']['output_filepath'][:-5]+'.hdf5')
             #Need to save weights
             outputFile = open(outputDir + '/' + folderName + '.csv', 'a')
-            outputFile.write(str(JSON_dict['GenerateLayerMasks']['graphGeneratorParams']['p']) + ',' + str(patal.final_score) + '\n')
+            outputFile.write(str(JSON_dict['GenerateLayerMasks']['graphGeneratorParams']['degrees']) + ',' + str(patal.final_score) + '\n')
             outputFile.close()
