@@ -52,7 +52,7 @@ class Patal:
     def create_network(self, 
                        layer_sizes,
                        layerMasks=None,
-                       dropout=0,  
+                       dropout=(0.8, 0.5, 0.5),
                        activation_function='sigmoid',
                        loss='mse', 
                        lr=0.01, 
@@ -87,14 +87,8 @@ class Patal:
                         init = init
                         ),
                     self.layerMasks[l-1]) #add the desired mask, works in keraspatal
-            if dropout > 0:
-                model.add(Dropout(dropout))
+            model.add(Dropout(dropout[l-1]))
         sgd = SGD(lr=lr, decay=decay, momentum=momentum, nesterov=nesterov)
-
-        lr = 1.
-        rho = 0.95
-        epsilon = 0.000001
-        ada = Adadelta(lr=lr,rho=rho,epsilon=epsilon)
 
         model.compile(loss=loss, optimizer=sgd)
         self.model = model

@@ -155,3 +155,6 @@ from keraspatal.utils.generic_utils import get_from_module
 
 def get(identifier, kwargs=None):
     return get_from_module(identifier, globals(), 'graph_creation', instantiate=True, kwargs=kwargs)
+
+if __name__ == "__main__":
+    print random_expander_graph([2], [30,10])
