@@ -49,10 +49,12 @@ class Sequential(Layer):
         self.params += params
         self.regularizers += regularizers
         self.constraints += constraints
-        if layer_mask != None:  #PAT added
+        if layer_mask != None and layer.__class__.__name__ == 'Dense':  #PAT added
             if layer_mask.shape != layer.params[0].eval().shape:
                 raise Exception("Layer mask %s not compatible with layer shape %s." % (layer_mask.shape,layer.params.eval().shape))
             self.layer_masks += [floatX(layer_mask),None] #because the tensor list goes W,b
+        elif layer.__class__.__name__ == 'Dropout':
+            pass #Dropout doesn't add any graphs to the computation but acts as a layer
         else:
             self.layer_masks += [None,None]
 
